@@ -12,13 +12,16 @@ Original file is located at
 import wikipedia
 import re
 import nltk
+import json
+import jsonpickle
 
 nltk.download('punkt')
 
 class Section:
     def __init__(self, title, content, parent):
         self.title = title
-        self.content = self.tokenizeText(content)
+        self.content = content
+        # self.tokenizeText(content)
         self.parent = parent
         self.children = []
 
@@ -34,12 +37,14 @@ class Section:
             _str = _str + "Child " + str(i) + ": " + child.title + "\n"
         _str = _str + "Content: " + str(self.content)
         return _str
+    
 
 cp = wikipedia.page("California Polytechnic State University")
 cp_str = cp.content
 section_headers = re.findall(r'[=]+[\s]*[\w\s]+[\s]*[=]+', cp_str)
 
-section_names = {}
+all_sections = {}
+p1_names = {}
 hierarchy = {0.0:'none', 1.0:'', 2.0:'', 3.0:''}
 for i in section_headers:
     h_level = ((len(re.findall(r'=',i))-4)/2)+1 # identify current section hierarchical level
@@ -51,8 +56,14 @@ for i in section_headers:
     hierarchy[h_level] = text # save new parents to hierarchy dict.
     section_obj = Section(text, cp.section(text), parent) # new section obj for current section
     if parent != 'none': # if it's not a root node, add the childern to each parent
-        section_names[parent].addChild(section_obj)
-    section_names[text] = section_obj # Add section to dictionary of sections
+        all_sections[parent].addChild(section_obj)
+    else:
+        p1_names[text] = section_obj
+    all_sections[text] = section_obj # Add section to dictionary of sections
 
-print(section_names['History'])
 
+app_json = jsonpickle.encode(p1_names)
+# print(app_json)
+
+with open('data.json', 'w') as f:
+    f.write(app_json)
