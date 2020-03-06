@@ -65,5 +65,16 @@ for i in section_headers:
 app_json = jsonpickle.encode(p1_names)
 # print(app_json)
 
+output_dict = {}
+for key in all_sections:
+    obj = all_sections[key]
+    if key not in output_dict.keys():
+        output_dict[key] = {}
+    output_dict[key]['children'] = []
+    for child in obj.children:
+        output_dict[key]['children'].append(child.title)
+    output_dict[key]['parent'] = obj.parent
+    output_dict[key]['content'] = obj.content
+
 with open('data.json', 'w') as f:
-    f.write(app_json)
+    json.dump(output_dict, f)
