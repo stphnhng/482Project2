@@ -62,9 +62,6 @@ for i in section_headers:
     all_sections[text] = section_obj # Add section to dictionary of sections
 
 
-app_json = jsonpickle.encode(p1_names)
-# print(app_json)
-
 output_dict = {}
 for key in all_sections:
     obj = all_sections[key]
@@ -76,12 +73,17 @@ for key in all_sections:
     output_dict[key]['parent'] = obj.parent
     output_dict[key]['content'] = obj.content
 
+output_dict['Introduction'] = {}
+output_dict['Introduction']['children'] = []
+output_dict['Introduction']['parent'] = 'none'
+output_dict['Introduction']['content'] = wikipedia.page('california polytechnic school').content.split("\n")[0] + '\n' + wikipedia.page('california polytechnic school').content.split("\n")[1]
+
 with open('data.json', 'w') as f:
     json.dump(output_dict, f)
 
 output_infobox = {
-    'affiliations': ['California State University', 'American Association of State Colleges and Universities', 'Association of Public and Land-Grant Universities'],
-    'athletics': ['National Collegiate Athletic Association', 'NCAA Division I', 'Football Championship Subdivision', 'Big West Conference'],
+    'affiliations': 'California State University | American Association of State Colleges and Universities | Association of Public and Land-Grant Universities',
+    'athletics': 'National Collegiate Athletic Association | NCAA Division I | Football Championship Subdivision | Big West Conference',
     'campus': 'Suburban, 9,678 acres (3,917 ha) Total; 1,321 acres (535 ha) for the Main Campus; 155 acres (63 ha) for the Campus Core',
     'city': 'San Luis Obispo',
     'colors': 'Green and Gold',
