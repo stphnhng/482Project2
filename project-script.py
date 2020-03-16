@@ -35,9 +35,9 @@ nlp = en_core_web_lg.load()
 
 
 # Read in the data
-data = read_json("data_wInfo.json")
-qa = read_json("cp_alexa_qa.json")
-generated_qa = read_json("generated_qa.json")
+data = read_json("data/data_wInfo.json")
+qa = read_json("data/cp_alexa_qa.json")
+generated_qa = read_json("data/generated_qa.json")
 
 stop_words = stopwords.words('english')
 
@@ -71,7 +71,7 @@ def match_generated(query):
     most_similar_ans = ""
     most_similar_num = 0.0
     for q,answer in qa_generated_qs:
-        removed_stopwords = [word for word in nltk.word_tokenize(q) if word not in stop_words]
+        removed_stopwords = [word for word in nltk.word_tokenize(q) if word not in stop_words and word != 'Cal' and word != 'Poly']
         q = ' '.join(removed_stopwords)
         sim = nlp(query).similarity(nlp(q))
         if sim >= 0.75 and sim > most_similar_num:
@@ -85,7 +85,7 @@ def match_qa(query):
     most_similar_ans = ""
     most_similar_num = 0.0
     for q,answer in qa_infobox_qs:
-        removed_stopwords = [word for word in nltk.word_tokenize(q) if word not in stop_words]
+        removed_stopwords = [word for word in nltk.word_tokenize(q) if word not in stop_words and word.lower() != 'cal' and word.lower() != 'poly']
         q = ' '.join(removed_stopwords)
         sim = nlp(query).similarity(nlp(q))
         if sim >= 0.75 and sim > most_similar_num:
@@ -98,7 +98,7 @@ def match_infobox(query):
     most_similar_ans = ""
     most_similar_num = 0.0
     for q,answer in qa_infobox_qs:
-        removed_stopwords = [word for word in nltk.word_tokenize(q) if word not in stop_words]
+        removed_stopwords = [word for word in nltk.word_tokenize(q) if word not in stop_words and word != 'Cal' and word != 'Poly' ]
         q = ' '.join(removed_stopwords)
         sim = nlp(query).similarity(nlp(q))
         if sim >= 0.75 and sim > most_similar_num:
@@ -192,12 +192,12 @@ def find_sent_index(query, sentences_embeddings, min_sent_sim,  qa_match, info_m
       max_sim_index = index
   sim_list.sort(key=lambda x: x[1], reverse=True)
   if max_sim < min_sent_sim:
-    qa_q_sim, qa_q = match_qa(query)
-    if qa_q_sim >= qa_match:
-      return -1, qa_q
     info_sim, info_q = match_infobox(query)
     if info_sim >= info_match:
       return -1, info_q
+    qa_q_sim, qa_q = match_qa(query)
+    if qa_q_sim >= qa_match:
+      return -1, qa_q
     q_sim, generated_q = match_generated(query)
     if q_sim >= gen_match:
       return -1, generated_q
@@ -216,15 +216,13 @@ while 1:
     tok = nltk.word_tokenize(query)
     ot = [word for word in tok if 'cal' not in word.lower() and 'poly' not in word.lower()]
     query = ' '.join(ot)
-    print(query)
-    index, scores = find_sent_index(query, sentences_embeddings, *[0.35, 1.0, 0.8, 1.0])
+    index, scores = find_sent_index(query, sentences_embeddings, *[0.35, 0.7, 0.9, 0.9])
     sent = ""
     if index == -1:
         sent = scores
     elif index == -2:
         sent = 'Failed to predict'
     else:
-        '''
         top_sents = [nlp(sentences[i]) for i, score in scores[0:5]]
         embeddingResult = sentences[index]
         keywordResult = keywordExtractor(query, top_sents)
@@ -235,6 +233,5 @@ while 1:
             ultimateResult = embeddingResult
         else:
             ultimateResult = keywordResult
-        '''
         sent = sentences[index]
     print(f'Answer from wikipedia: {sent}')
