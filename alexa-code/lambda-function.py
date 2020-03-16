@@ -2,6 +2,7 @@ from __future__ import print_function
 from questions import qrs
 from responses import resp_dict
 
+
 # --------------- Helpers that build all of the responses ----------------------
 
 def build_speechlet_response(title, output, reprompt_text, should_end_session):
@@ -12,8 +13,8 @@ def build_speechlet_response(title, output, reprompt_text, should_end_session):
         },
         'card': {
             'type': 'Simple',
-            'title': "SessionSpeechlet - " + title,
-            'content': "SessionSpeechlet - " + output
+            'title': "" + title,
+            'content': "" + output
         },
         'reprompt': {
             'outputSpeech': {
@@ -23,6 +24,7 @@ def build_speechlet_response(title, output, reprompt_text, should_end_session):
         },
         'shouldEndSession': should_end_session
     }
+
 
 def build_response(session_attributes, speechlet_response):
     return {
@@ -45,6 +47,7 @@ def get_test_response():
     return build_response(session_attributes, build_speechlet_response(
         card_title, speech_output, reprompt_text, should_end_session))
 
+
 def get_welcome_response():
     """ If we wanted to initialize the session to have some attributes we could
     add those here
@@ -54,7 +57,7 @@ def get_welcome_response():
     speech_output = "Welcome to the Cal Poly Alexa application!"
     # If the user either does not reply to the welcome message or says something
     # that is not understood, they will be prompted again with this text.
-    reprompt_text = "I don't know if you heard me, welcome to your custom alexa application!"
+    reprompt_text = "I don't know if you heard me, welcome to the Cal Poly application!"
     should_end_session = False
     return build_response(session_attributes, build_speechlet_response(
         card_title, speech_output, reprompt_text, should_end_session))
@@ -69,17 +72,17 @@ def handle_session_end_request():
     return build_response({}, build_speechlet_response(
         card_title, speech_output, None, should_end_session))
 
+
 # --------------- Events ------------------
 
 def on_session_started(session_started_request, session):
     """ Called when the session starts.
-        One possible use of this function is to initialize specific 
+        One possible use of this function is to initialize specific
         variables from a previous state stored in an external database
     """
     # Add additional code here as needed
     pass
 
-    
 
 def on_launch(launch_request, session):
     """ Called when the user launches the skill without specifying what they
@@ -87,13 +90,15 @@ def on_launch(launch_request, session):
     """
     # Dispatch to your skill's launch message
     return get_welcome_response()
-    
+
+
 def get_value(dic):
     if 'value' in dic:
         return dic['value']
     else:
         return None
-    
+
+
 def get_cal_poly_resp(intent):
     card_title = 'cal_poly_parse'
     session_attributes = {}
@@ -107,7 +112,7 @@ def get_cal_poly_resp(intent):
         if obj:
             break
     quest = f'{resp_dict[slot]} {obj}'
-    
+
     words = obj.lower().split(' ')
     max_words = 0
     max_sent = None
@@ -118,19 +123,19 @@ def get_cal_poly_resp(intent):
             max_words = num_same
             max_sent = qr
     print('max', max_sent, max_words)
-    
+
     if '?' not in quest:
         quest = quest + '?'
+
     if quest.lower() in qrs:
         speech_output = qrs[quest.lower()]
     elif max_words >= 3:
         speech_output = f'Did you mean, {max_sent} If so the answer is, {qrs[max_sent]}'
     else:
         speech_output = speech_output + f' by {quest}'
-    
+
     return build_response(session_attributes, build_speechlet_response(
         card_title, speech_output, reprompt_text, should_end_session))
-
 
 
 def on_intent(intent_request, session):
